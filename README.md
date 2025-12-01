@@ -8,6 +8,8 @@
 
 ![Aether Dashboard](public/assets/aether_shot.png)
 
+Aether is a web-based application that provides a stunning 3D visualization of a galaxy, allowing users to explore and interact with a large dataset of particles. The application features a futuristic user interface with a chat interface that allows users to query the dataset and receive AI-powered responses.
+
 **Aether** is a next-generation 3D data visualization dashboard designed to render massive datasets as interactive "galaxies" of information. Built with performance and aesthetics in mind, it combines the power of **React Three Fiber** for WebGL rendering with a cinematic, sci-fi inspired HUD interface.
 
 > **Note**: This project is currently in active development.
