@@ -11,12 +11,16 @@ interface Message {
   content: string
 }
 
+/**
+ * Renders the UI overlay, including the header, system stats, chat interface, and other decorative elements.
+ * The overlay is animated and interactive, allowing the user to interact with the 3D scene through the chat.
+ */
 export default function Overlay() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useMockChat()
   const { setFocusTarget } = useAppStore()
   const [isChatOpen, setIsChatOpen] = useState(false)
 
-  // React to AI messages to trigger "actions"
+  // React to AI messages to trigger actions in the 3D scene.
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
     if (lastMessage?.role === 'assistant') {
@@ -30,7 +34,7 @@ export default function Overlay() {
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col h-full p-6 md:p-8 overflow-hidden">
-      {/* Scanning Lines Effect */}
+      {/* Scanning lines effect for a futuristic look. */}
       <div className="scanlines" />
 
       {/* Top Left: Header */}
@@ -121,6 +125,7 @@ export default function Overlay() {
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               className="glass-panel rounded-lg p-4 max-h-80 overflow-y-auto border-t-2 border-blue-500/30"
             >
+              {/* Renders the chat messages. */}
               {messages.map((m: Message, i: number) => (
                 <div key={i} className={`mb-3 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
                   <span className={`inline-block px-3 py-2 rounded-sm text-xs font-mono ${
@@ -133,6 +138,7 @@ export default function Overlay() {
                   </span>
                 </div>
               ))}
+              {/* Renders a loading indicator when the AI is processing a query. */}
               {isLoading && (
                 <div className="text-left">
                   <span className="inline-flex items-center px-3 py-2 rounded-sm text-xs font-mono bg-purple-900/20 text-purple-300 border border-purple-500/20">
@@ -152,6 +158,7 @@ export default function Overlay() {
           className="relative group"
         >
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+          {/* Renders the chat input form. */}
           <form onSubmit={(e) => { setIsChatOpen(true); handleSubmit(e); }} className="relative bg-black/80 backdrop-blur-xl border border-white/10 rounded-lg flex items-center p-1">
             <div className="pl-3 pr-2">
               <Crosshair className="w-5 h-5 text-blue-500" />

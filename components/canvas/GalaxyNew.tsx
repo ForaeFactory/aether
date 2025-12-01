@@ -8,6 +8,11 @@ import * as THREE from 'three'
 import { vertexShader, fragmentShader } from './shaders/particleShader'
 import { useAppStore } from '@/store/store'
 
+/**
+ * Generates the data for the galaxy particles.
+ * @param {number} particleCount - The number of particles to generate.
+ * @returns {[Float32Array, Float32Array, Float32Array]} - An array containing the positions, colors, and sizes of the particles.
+ */
 const generateGalaxyData = (particleCount: number) => {
   const positions = new Float32Array(particleCount * 3)
   const colors = new Float32Array(particleCount * 3)
@@ -18,7 +23,7 @@ const generateGalaxyData = (particleCount: number) => {
   const color3 = new THREE.Color('#06b6d4') // Cyan
 
   for (let i = 0; i < particleCount; i++) {
-    // Spiral distribution
+    // Spiral distribution for the particles to create a galaxy-like shape.
     const radius = Math.random() * Math.random() * 20 + 2
     const spinAngle = radius * 0.8
     const branchAngle = (i % 3) * ((2 * Math.PI) / 3)
@@ -31,7 +36,7 @@ const generateGalaxyData = (particleCount: number) => {
     positions[i * 3 + 1] = y
     positions[i * 3 + 2] = z
 
-    // Color based on radius/mix
+    // Color is based on a mix of three colors, providing a varied and vibrant look.
     const mixedColor = color1.clone().lerp(color2, Math.random()).lerp(color3, Math.random())
     colors[i * 3] = mixedColor.r
     colors[i * 3 + 1] = mixedColor.g
@@ -43,6 +48,10 @@ const generateGalaxyData = (particleCount: number) => {
   return [positions, colors, sizes]
 }
 
+/**
+ * Renders a 3D galaxy of particles with interactive elements.
+ * The galaxy rotates, and particles can be hovered over to display a tooltip.
+ */
 export default function Galaxy() {
   const pointsRef = useRef<THREE.Points>(null)
   const { raycaster } = useThree()
@@ -51,34 +60,41 @@ export default function Galaxy() {
 
   const particleCount = 10000
 
+  // Uniforms for the shader material, used for animations and interactions.
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
     uHoveredIndex: { value: -1 },
   }), [])
 
+  // Generate the galaxy data once and memoize it.
   const [positions, colors, sizes] = useMemo(() => generateGalaxyData(particleCount), [])
 
+  // Set the raycaster threshold for better performance.
   useEffect(() => {
     if (raycaster.params.Points) {
       raycaster.params.Points.threshold = 0.2
     }
   }, [raycaster])
 
+  // Animation loop to rotate the galaxy and update shader uniforms.
   useFrame((state) => {
     if (pointsRef.current) {
       // Rotate the entire galaxy slowly
       pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.05
       
-      // Update uniforms
+      // Update uniforms for the shader.
       const material = pointsRef.current.material as THREE.ShaderMaterial
       material.uniforms.uTime.value = state.clock.getElapsedTime()
       material.uniforms.uHoveredIndex.value = hoveredIndex !== null ? hoveredIndex : -1
     }
   })
 
+  /**
+   * Handles the pointer move event to detect hovered particles.
+   * @param {ThreeEvent<PointerEvent>} e - The pointer event.
+   */
   const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
-    // e.index is the index of the particle
     if (e.index !== undefined) {
       setHoveredIndex(e.index)
       document.body.style.cursor = 'pointer'
@@ -88,18 +104,25 @@ export default function Galaxy() {
     }
   }
 
+  /**
+   * Handles the pointer out event to reset the hovered particle.
+   */
   const handlePointerOut = () => {
     setHoveredIndex(null)
     document.body.style.cursor = 'auto'
   }
 
+  /**
+   * Handles the click event to select a particle.
+   * @param {ThreeEvent<PointerEvent>} e - The click event.
+   */
   const handleClick = (e: ThreeEvent<PointerEvent>) => {
     if (e.index !== undefined) {
       setSelectedParticle(e.index)
     }
   }
 
-  // Calculate position for tooltip if hovered
+  // Calculate the position for the tooltip when a particle is hovered.
   const hoveredPosition = useMemo(() => {
     if (hoveredIndex === null) return null
     const x = positions[hoveredIndex * 3]
@@ -121,6 +144,7 @@ export default function Galaxy() {
         }}
       >
         <bufferGeometry>
+          {/* Attributes for the particle positions, colors, and sizes. */}
           <bufferAttribute
             attach="attributes-position"
             count={positions.length / 3}
@@ -143,6 +167,7 @@ export default function Galaxy() {
             args={[sizes, 1]}
           />
         </bufferGeometry>
+        {/* Shader material for custom particle rendering. */}
         <shaderMaterial
           vertexShader={vertexShader}
           fragmentShader={fragmentShader}
@@ -153,6 +178,7 @@ export default function Galaxy() {
         />
       </points>
 
+      {/* Renders a tooltip when a particle is hovered. */}
       {hoveredIndex !== null && hoveredPosition && (
         <Html position={hoveredPosition} style={{ pointerEvents: 'none' }}>
           <div className="glass-panel p-3 rounded-sm w-48 transform -translate-x-1/2 -translate-y-full mt-[-15px] border-l-2 border-blue-500">
